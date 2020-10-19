@@ -124,6 +124,7 @@ public class Navigation extends LinearOpMode {
     private OpenGLMatrix lastLocation = null;
     private VuforiaLocalizer vuforia = null;
     private boolean targetVisible = false;
+    private boolean PHONE_IS_PORTRAIT = true;
     private float phoneXRotate    = 0;
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
