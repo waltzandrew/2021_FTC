@@ -24,7 +24,7 @@ public class AutoV1 extends LinearOpMode {
     private static final String VUFORIA_KEY = "ARBKom//////AAABmQ6j5Q7euktykQmWnMdF5GKAEmU17d+XyTd31FAnr9ICsUpVzyCSwHOUoi6PAoGUuPNBk3LXi1SLZgfOen62wPzq9PhCzJsKMKHSW2BBRWZb+/2Zciy+jsvae89X+CMXyOXong09iiFyUSVipop+UufmDqdjVnp4n1DaGkLilCxwqCdN8NCVdLjlbvlzwfQkQ7xgEswiN01pRaig8bVHxVsq+FdamOdRNmBJhtuAjrZK52hK+9IT6GwM6mxMJjWEF3yrEup2/G/jODEXJAQST8OPx9yKZt+8NKObk4Fs0U5WkVWmUilmxvNCmPwq8snqs76w7DJANEsxA32YaPBTa51kfMnHCKdOuTgf+Gd5gEX5";
 
     private static final double RADIUS = 4;
-    private static final double CPR = 560;
+    private static final double CPR = 1120;
     private static final int CPI = (int)(CPR/(2*Math.PI*RADIUS));
 
 
@@ -61,6 +61,8 @@ public class AutoV1 extends LinearOpMode {
         waitForStart();
 
         if (opModeIsActive()) {
+            moveDistance(0.5, 24, 4);
+
             time.reset();
             while (opModeIsActive() && !ran && time.seconds() < 3) {
                 if (tfod != null) {
@@ -93,13 +95,27 @@ public class AutoV1 extends LinearOpMode {
             }
             switch(stackSize)
             {
-                case ONE:
+                case NONE: //target zone a
+                    moveDistance(0.5, 60, 4);
+                    sleep(100);
+                   // moveDistance(0.5, -60, 4);
+                    break;
 
+                case ONE: //target zone b
+                    moveDistance(0.5, 37, 4);
+                    sleep(100);
+
+                 //   moveDistance(0.5, -37, 4);;
                     break;
                     
-                case FOUR:
+                case FOUR: //target zone c
+        moveDistance(0.5, 80, 4);
+        sleep(100);
+        //moveDistance(0.5, -80, 4);
 
                     break;
+
+
             }
 
         }
@@ -117,6 +133,7 @@ public class AutoV1 extends LinearOpMode {
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        parameters.cameraMonitorFeedback = VuforiaLocalizer.Parameters.CameraMonitorFeedback.AXES;
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
@@ -208,22 +225,22 @@ public class AutoV1 extends LinearOpMode {
         setAll(Math.abs(power));     //  give power(postive)
         time.reset();               //   start timeout clock
 
-        while(opModeIsActive() && time.seconds()<timeoutS && (r.frontright.isBusy() || r.frontleft.isBusy() || r.backleft.isBusy() || r.backright.isBusy()))
+        while(opModeIsActive() && time.seconds()<timeoutS && r.backleft.isBusy())//&& (r.frontright.isBusy() || r.frontleft.isBusy() || r.backleft.isBusy() || r.backright.isBusy()))
         {
-            error = ((r.frontleft.getCurrentPosition() + r.backleft.getCurrentPosition())/2) - ((r.frontright.getCurrentPosition() + r.backright.getCurrentPosition())/2);
-            if(Math.abs(error) < errorMargin) error = 0;
+           error = ((r.frontleft.getCurrentPosition()) - ((r.frontright.getCurrentPosition())));
+           if(Math.abs(error) < errorMargin) error = 0;
 
-            leftPower = power - (error * kP);
-            rightPower = power + (error * kP);
+           leftPower = power - (error * kP);
+           rightPower = power + (error * kP);
 
-            setRight(rightPower);
-            setLeft(leftPower);
+           setRight(rightPower);
+           setLeft(leftPower);
 
-            telemetry.addData("FrontLeft",  "Running at %7d :%7d", r.frontleft.getCurrentPosition());
-            telemetry.addData("FrontRight", "Running at %7d :%7d", r.frontright.getCurrentPosition());
-            telemetry.addData("BackLeft",   "Running at %7d :%7d", r.backleft.getCurrentPosition());
-            telemetry.addData("BackRight",  "Running at %7d :%7d", r.backright.getCurrentPosition());
-            telemetry.update();
+            telemetry.addData("FrontLeft",  "Running at %7d ", r.frontleft.getCurrentPosition());
+            telemetry.addData("FrontRight", "Running at %7d ", r.frontright.getCurrentPosition());
+            telemetry.addData("BackLeft",   "Running at %7d ", r.backleft.getCurrentPosition());
+            telemetry.addData("BackRight",  "Running at %7d ", r.backright.getCurrentPosition());
+          //telemetry.update();
         }
         setAll(0);
         setAllEncoder();

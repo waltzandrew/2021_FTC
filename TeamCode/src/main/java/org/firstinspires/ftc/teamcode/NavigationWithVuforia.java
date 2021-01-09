@@ -88,6 +88,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 @TeleOp(name="NavigationWithVuforia")
 
 public class NavigationWithVuforia extends LinearOpMode {
+    Hardware r = new Hardware();
 
     // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
@@ -137,7 +138,7 @@ public class NavigationWithVuforia extends LinearOpMode {
          * Retrieve the camera we are to use.
          */
         webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
+        r.init(hardwareMap);
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
@@ -300,10 +301,38 @@ public class NavigationWithVuforia extends LinearOpMode {
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
             }
             else {
                 telemetry.addData("Visible Target", "none");
             }
+                try {
+                    Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
+                    if(gamepad1.a){
+                        if(rotation.thirdAngle >95) {
+                            r.frontleft.setPower(0.3);
+                            r.backleft.setPower(0.3);
+                            r.backright.setPower(-0.3);
+                            r.backleft.setPower(-0.3);
+                        } else if (rotation.thirdAngle < 85) {
+                            r.frontleft.setPower(-0.3);
+                            r.backleft.setPower(-0.3);
+                            r.backright.setPower(0.3);
+                            r.backleft.setPower(0.3);
+                        } else {
+                            r.frontleft.setPower(0);
+                            r.backleft.setPower(-0);
+                            r.backright.setPower(0);
+                            r.backleft.setPower(0);
+                        }
+                    }
+                } catch (Exception e) {
+
+                }
+
+
+
+
             telemetry.update();
         }
 

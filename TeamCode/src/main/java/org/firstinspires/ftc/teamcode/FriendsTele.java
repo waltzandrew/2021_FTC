@@ -57,6 +57,7 @@ public class FriendsTele extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     Hardware r = new Hardware();
+    private static final String VUFORIA_KEY = "ARBKom//////AAABmQ6j5Q7euktykQmWnMdF5GKAEmU17d+XyTd31FAnr9ICsUpVzyCSwHOUoi6PAoGUuPNBk3LXi1SLZgfOen62wPzq9PhCzJsKMKHSW2BBRWZb+/2Zciy+jsvae89X+CMXyOXong09iiFyUSVipop+UufmDqdjVnp4n1DaGkLilCxwqCdN8NCVdLjlbvlzwfQkQ7xgEswiN01pRaig8bVHxVsq+FdamOdRNmBJhtuAjrZK52hK+9IT6GwM6mxMJjWEF3yrEup2/G/jODEXJAQST8OPx9yKZt+8NKObk4Fs0U5WkVWmUilmxvNCmPwq8snqs76w7DJANEsxA32YaPBTa51kfMnHCKdOuTgf+Gd5gEX5";
 
     @Override
     public void runOpMode() {
@@ -84,9 +85,9 @@ public class FriendsTele extends LinearOpMode {
             double flp, frp, blp, brp, x,y,z, deadzone;
             deadzone = 0.1;
 
-            x = gamepad1.right_stick_x;
+            z = gamepad1.right_stick_x;
             y = gamepad1.left_stick_y;
-            z = gamepad1.left_stick_x;
+            x = gamepad1.left_stick_x;
             if(Math.abs(x) < deadzone) x = 0;
             if(Math.abs(y) < deadzone) y = 0;
             if(Math.abs(z) < deadzone) z = 0;
@@ -97,10 +98,13 @@ public class FriendsTele extends LinearOpMode {
             brp = -y-x+z;
 
             // Send calculated power to wheels
-            r.frontleft.setPower(flp);
             r.frontright.setPower(frp);
             r.backleft.setPower(blp);
             r.backright.setPower(brp);
+            r.frontleft.setPower(flp);
+
+            //mechs
+            r.shooter.setPower(gamepad1.right_trigger);
 
         }
     }
