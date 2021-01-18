@@ -36,6 +36,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -55,25 +66,60 @@ import com.qualcomm.robotcore.util.Range;
 public class FriendsTele extends LinearOpMode {
 
     // Declare OpMode members.
+    WebcamName webcamName = null;
     private ElapsedTime runtime = new ElapsedTime();
     Hardware r = new Hardware();
     private static final String VUFORIA_KEY = "ARBKom//////AAABmQ6j5Q7euktykQmWnMdF5GKAEmU17d+XyTd31FAnr9ICsUpVzyCSwHOUoi6PAoGUuPNBk3LXi1SLZgfOen62wPzq9PhCzJsKMKHSW2BBRWZb+/2Zciy+jsvae89X+CMXyOXong09iiFyUSVipop+UufmDqdjVnp4n1DaGkLilCxwqCdN8NCVdLjlbvlzwfQkQ7xgEswiN01pRaig8bVHxVsq+FdamOdRNmBJhtuAjrZK52hK+9IT6GwM6mxMJjWEF3yrEup2/G/jODEXJAQST8OPx9yKZt+8NKObk4Fs0U5WkVWmUilmxvNCmPwq8snqs76w7DJANEsxA32YaPBTa51kfMnHCKdOuTgf+Gd5gEX5";
 
+    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
+    // We will define some constants and conversions here
+    private static final float mmPerInch        = 25.4f;
+    private static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
+
+    // Constants for perimeter targets
+    private static final float halfField = 72 * mmPerInch;
+    private static final float quadField  = 36 * mmPerInch;
+
+    // Class Members
+    private OpenGLMatrix lastLocation = null;
+    private VuforiaLocalizer vuforia = null;
+
+    private boolean targetVisible = false;
+    private boolean clawOpen = false;
+
     @Override
     public void runOpMode() {
+
+        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         r.init(hardwareMap);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
 
+        parameters.cameraName = webcamName;
+        parameters.useExtendedTracking = false;
 
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards wh+*en connected directly to the battery
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
+        VuforiaTrackables targetsUltimateGoal = this.vuforia.loadTrackablesFromAsset("UltimateGoal");
+        VuforiaTrackable blueTowerGoalTarget = targetsUltimateGoal.get(0);
+        blueTowerGoalTarget.setName("Blue Tower Goal Target");
+        VuforiaTrackable redTowerGoalTarget = targetsUltimateGoal.get(1);
+        redTowerGoalTarget.setName("Red Tower Goal Target");
+        VuforiaTrackable redAllianceTarget = targetsUltimateGoal.get(2);
+        redAllianceTarget.setName("Red Alliance Target");
+        VuforiaTrackable blueAllianceTarget = targetsUltimateGoal.get(3);
+        blueAllianceTarget.setName("Blue Alliance Target");
+        VuforiaTrackable frontWallTarget = targetsUltimateGoal.get(4);
+        frontWallTarget.setName("Front Wall Target");
+
+        // For convenience, gather together all the trackable objects in one easily-iterable collection
+        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+        allTrackables.addAll(targetsUltimateGoal);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -103,8 +149,46 @@ public class FriendsTele extends LinearOpMode {
             r.backright.setPower(brp);
             r.frontleft.setPower(flp);
 
+
             //mechs
             r.shooter.setPower(gamepad1.right_trigger);
+            r.armLift.setPower(gamepad2.right_stick_y);
+
+            if (gamepad2.a){
+                clawOpen = !clawOpen;
+                System.out.println(r.armServo.getPosition());
+                if (clawOpen){
+
+                } else {
+
+                }
+            }
+
+
+            if(gamepad1.x) {
+                //blue tower
+                targetVisible = false;
+                for (VuforiaTrackable trackable : allTrackables) {
+                    if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                        telemetry.addData("Visible Target", trackable.getName());
+                        targetVisible = true;
+
+                        // getUpdatedRobotLocation() will return null if no new information is available since
+                        // the last time that call was made, or if the trackable is not currently visible.
+                        OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                        if (robotLocationTransform != null) {
+                            lastLocation = robotLocationTransform;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if(gamepad1.b){
+                //red tower
+
+            }
+
 
         }
     }

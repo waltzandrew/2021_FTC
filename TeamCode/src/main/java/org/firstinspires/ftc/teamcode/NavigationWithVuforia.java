@@ -243,6 +243,7 @@ public class NavigationWithVuforia extends LinearOpMode {
         if (PHONE_IS_PORTRAIT) {
             phoneXRotate = 90 ;
         }
+        //TODO: fix camera position once mounted
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.

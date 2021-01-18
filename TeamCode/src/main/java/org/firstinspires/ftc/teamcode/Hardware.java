@@ -44,6 +44,9 @@ public class Hardware
     public DcMotor backleft = null;
     public DcMotor backright = null;
     public DcMotor shooter = null;
+    public DcMotor intake = null;
+    public DcMotor armLift = null;
+    public Servo armServo = null;
 
     /* local OpMode members. */
     HardwareMap hw           =  null;
@@ -65,6 +68,9 @@ public class Hardware
         backright = hw.get(DcMotor.class, "br");
         backleft = hw.get(DcMotor.class, "bl");
         shooter = hw.get(DcMotor.class, "s");
+        intake = hw.get(DcMotor.class, "i");
+        armLift = hw.get(DcMotor.class, "al");
+        armServo = hw.get(Servo.class, "as");
 
         frontleft.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
         frontright.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
@@ -76,6 +82,9 @@ public class Hardware
         backleft.setPower(0);
         backright.setPower(0);
         shooter.setPower(0);
+        intake.setPower(0);
+        armLift.setPower(0);
+        armServo.setPosition(0);
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
@@ -84,6 +93,7 @@ public class Hardware
         backleft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backright.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        armLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
  }
 
